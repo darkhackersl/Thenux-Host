@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/:username/:project*",
+      "destination": "/user/:username/:project"
+    }
+  ]
+}
