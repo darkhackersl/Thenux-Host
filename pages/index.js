@@ -11,38 +11,44 @@ export default function Home() {
   const handleDeploy = async (e) => {
     e.preventDefault();
 
-    if (!username || !project || !html) {
-      alert('Username, Project, and HTML are required!');
-      return;
-    }
+    const payload = { username, project, html, css, js };
 
     const res = await fetch('/api/upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, project, html, css, js })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      console.error('JSON parse error', err);
+      alert('Server error');
+      return;
+    }
+
     if (data.success) {
       setLink(`${window.location.origin}/${username}/${project}`);
     } else {
-      alert('Failed to deploy');
+      alert('Deployment failed');
     }
   };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1 style={{ fontSize: '2rem' }}>🌐 Create & Host Your Website</h1>
-
+    <main style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
+      <h1>🚀 Thenux Static Host</h1>
       <form onSubmit={handleDeploy} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
-        <input placeholder="Project Name" value={project} onChange={e => setProject(e.target.value)} />
-        
-        <textarea placeholder="Write your HTML here..." rows={10} value={html} onChange={e => setHtml(e.target.value)} />
-        <textarea placeholder="Write your CSS here..." rows={6} value={css} onChange={e => setCss(e.target.value)} />
-        <textarea placeholder="Write your JavaScript here..." rows={6} value={js} onChange={e => setJs(e.target.value)} />
+        <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+        <input placeholder="Project Name" value={project} onChange={(e) => setProject(e.target.value)} required />
 
-        <button type="submit" style={{ padding: '0.5rem', fontWeight: 'bold' }}>🚀 Deploy Site</button>
+        <textarea placeholder="HTML code..." value={html} onChange={(e) => setHtml(e.target.value)} rows={10} />
+        <textarea placeholder="CSS code..." value={css} onChange={(e) => setCss(e.target.value)} rows={6} />
+        <textarea placeholder="JavaScript code..." value={js} onChange={(e) => setJs(e.target.value)} rows={6} />
+
+        <button type="submit" style={{ padding: '10px', fontWeight: 'bold' }}>💾 Deploy</button>
       </form>
 
       {link && (
