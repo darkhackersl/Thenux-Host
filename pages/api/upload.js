@@ -33,3 +33,8 @@ export default async function handler(req, res) {
 
   return res.json({ success: true });
 }
+export default async function handler(req, res) {
+  console.log('Method:', req.method);  // 🔍 See if it’s being called
+
+  if (req.method !== 'POST') return res.status(405).end();
+
