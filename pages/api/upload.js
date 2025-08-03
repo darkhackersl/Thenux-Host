@@ -1,32 +1,35 @@
-import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import AdmZip from 'adm-zip';
-
-export const config = {
-  api: {
-    bodyParser: false
-  }
-};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const form = new formidable.IncomingForm();
+  const { username, project, html, css, js } = req.body;
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) return res.status(500).json({ error: 'Form error' });
+  if (!username || !project || !html) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
 
-    const username = fields.username;
-    const project = fields.project;
-    const zip = files.zip;
+  const folder = path.join(process.cwd(), 'public', 'sites', `${username}-${project}`);
+  fs.mkdirSync(folder, { recursive: true });
 
-    const extractPath = path.join(process.cwd(), 'public', 'sites', username + '-' + project);
-    fs.mkdirSync(extractPath, { recursive: true });
+  const fullHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${project}</title>
+  <style>${css || ''}</style>
+</head>
+<body>
+  ${html || ''}
+  <script>${js || ''}</script>
+</body>
+</html>
+  `.trim();
 
-    const zipFile = new AdmZip(zip.filepath);
-    zipFile.extractAllTo(extractPath, true);
+  fs.writeFileSync(path.join(folder, 'index.html'), fullHtml);
 
-    res.json({ success: true });
-  });
+  return res.json({ success: true });
 }
