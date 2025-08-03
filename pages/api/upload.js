@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') return res.status(405).end(); // ✅ THIS line is critical
 
   const { username, project, html, css, js } = req.body;
 
