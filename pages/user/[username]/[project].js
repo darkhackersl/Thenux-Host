@@ -1,25 +1,36 @@
-import fs from 'fs';
-import path from 'path';
+// pages/user/[username]/[project].js
 
-export default function StaticSite({ html }) {
-  return (
-    <div dangerouslySetInnerHTML={{ __html: html }} />
-  );
+import memoryStore from '../../../lib/memoryStore';
+
+export default function HostedSite({ html }) {
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-export async function getServerSideProps(context) {
-  const { username, project } = context.params;
-  const filePath = path.join(process.cwd(), 'public', 'sites', `${username}-${project}`, 'index.html');
+export async function getServerSideProps({ params }) {
+  const { username, project } = params;
+  const key = `${username}-${project}`;
+  const data = memoryStore[key];
 
-  if (!fs.existsSync(filePath)) {
-    return {
-      notFound: true
-    };
+  if (!data) {
+    return { notFound: true };
   }
 
-  const html = fs.readFileSync(filePath, 'utf8');
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>${data.css || ''}</style>
+</head>
+<body>
+  ${data.html || ''}
+  <script>${data.js || ''}</script>
+</body>
+</html>
+`;
 
   return {
     props: { html }
   };
 }
+
