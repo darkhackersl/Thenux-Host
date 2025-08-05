@@ -1,10 +1,10 @@
 // pages/api/upload.js
 
-let memoryStore = {};
+import memoryStore from '../../lib/memoryStore';
 
 export default function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).end(); // Method Not Allowed
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { username, project, html, css, js } = req.body;
@@ -19,4 +19,3 @@ export default function handler(req, res) {
   return res.status(200).json({ success: true });
 }
 
-export { memoryStore };
