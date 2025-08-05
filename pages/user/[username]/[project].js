@@ -1,19 +1,20 @@
 // pages/user/[username]/[project].js
 
-import memoryStore from '../../../lib/memoryStore';
+import { db } from '../../../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-export default function HostedSite({ html }) {
+export default function RenderedPage({ html }) {
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export async function getServerSideProps({ params }) {
-  const { username, project } = params;
-  const key = `${username}-${project}`;
-  const data = memoryStore[key];
+  const key = `${params.username}-${params.project}`;
+  const docRef = doc(db, 'sites', key);
+  const snapshot = await getDoc(docRef);
 
-  if (!data) {
-    return { notFound: true };
-  }
+  if (!snapshot.exists()) return { notFound: true };
+
+  const data = snapshot.data();
 
   const html = `
 <!DOCTYPE html>
@@ -23,14 +24,12 @@ export async function getServerSideProps({ params }) {
   <style>${data.css || ''}</style>
 </head>
 <body>
-  ${data.html || ''}
+  ${data.html}
   <script>${data.js || ''}</script>
 </body>
 </html>
 `;
 
-  return {
-    props: { html }
-  };
+  return { props: { html } };
 }
 
