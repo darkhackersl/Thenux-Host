@@ -1,11 +1,10 @@
 // pages/api/upload.js
 
-import memoryStore from '../../lib/memoryStore';
+import { db } from '../../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { username, project, html, css, js } = req.body;
 
@@ -13,9 +12,12 @@ export default function handler(req, res) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
-  const key = `${username}-${project}`;
-  memoryStore[key] = { html, css, js };
-
-  return res.status(200).json({ success: true });
+  try {
+    const docRef = doc(db, 'sites', `${username}-${project}`);
+    await setDoc(docRef, { username, project, html, css, js });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Firebase Error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
 }
-
